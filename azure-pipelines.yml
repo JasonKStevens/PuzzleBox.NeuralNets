@@ -1,7 +1,5 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+# CI for PuzzleBox.NeuralNets
+# Restore > Build > Pack > Push
 
 trigger:
 - master
@@ -13,5 +11,23 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+
+# Restore
+- task: NuGetCommand@2
+  displayName: "nuget restore"
+  inputs:
+    restoreSolution: '**/*.csproj'
+
+# Build
+- task: NuGetCommand@2
+  displayName: "build"
+  inputs:
+    configuration: 'release'
+
+# Pack
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    configuration: 'release'
+    packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
+    nobuild: true
