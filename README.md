@@ -1,6 +1,8 @@
 # PuzzleBox.NeuralNets
 
-_This library is still in alpha._
+[![Build Status](https://dev.azure.com/jasonkstevens/PuzzleBox.NeuralNets/_apis/build/status/JasonKStevens.PuzzleBox.NeuralNets?branchName=master)](https://dev.azure.com/jasonkstevens/PuzzleBox.NeuralNets/_build/latest?definitionId=1&branchName=master)
+
+_This library is in alpha._
 
 **PuzzleBox.NeuralNets** is a [.NET library](https://www.nuget.org/packages/PuzzleBox.NeuralNets/0.1.0) for building and training neural networks.  It's designed mainly to be easy to use and extend.  The features are prioritised according to the needs of another project, for analysing the audio of bee hives.
 
