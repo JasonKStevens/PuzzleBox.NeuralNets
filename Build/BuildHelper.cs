@@ -20,7 +20,7 @@ namespace Build
 
         public static void BuildSolution(string configuration = "Release")
         {
-            Run("dotnet", $"clean --configuration={configuration}");
+            Run("dotnet", $"build --configuration={configuration}");
         }
 
         public static void RunTests(string project, string configuration = "Release")
@@ -30,13 +30,13 @@ namespace Build
 
         public static void Pack(string project, string artifactsDirectory = ArtifactsDir)
         {
-            Run("dotnet", $"pack {project}/{project}.csproj -c Release -o ../{artifactsDirectory} --no-build");
+            Run("dotnet", $"pack {project}/{project}.csproj -c Release -o {artifactsDirectory} --version-suffix alpha --no-build");
         }
 
         public static void Publish(
             string apiKey,
-            string artifactsDirectory = ArtifactsDir,
-            string server = NugetServer)
+            string server = NugetServer,
+            string artifactsDirectory = ArtifactsDir)
         {
             var packagesToPush = GetFiles(artifactsDirectory, "*.nupkg", SearchOption.TopDirectoryOnly)
                 .Select(f => new FileInfo(f))
@@ -56,18 +56,19 @@ namespace Build
             {
                 if (Exists(directory))
                 {
-                    Delete(directory);
+                    Delete(directory, true);
                 }
             }
         }
 
         public static string GetNugetApiKey()
         {
-            var apiKey = Environment.GetEnvironmentVariable("PuzzleBox.NeuralNets.ApiKey");
+            const string EnvironmentVariableName = "PuzzleBox.NeuralNets.Nuget.ApiKey";
+            var apiKey = Environment.GetEnvironmentVariable(EnvironmentVariableName);
 
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                throw new Exception("Nuget API key should be set in environment variable 'PuzzleBox.NeuralNets.ApiKey'. Packages will not be pushed.");
+                throw new Exception($"Nuget API key should be set in environment variable '{EnvironmentVariableName}'. Packages will not be pushed.");
             }
 
             return apiKey;

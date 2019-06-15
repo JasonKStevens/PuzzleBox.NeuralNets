@@ -29,18 +29,17 @@ namespace Build
 
             Target(Test, DependsOn(Build), () =>
             {
-                RunTests("PartPay.NeuralNets.Test");
+                RunTests("PuzzleBox.NeuralNets.Test");
             });
 
-            Target(Pack, DependsOn(Test), () =>
+            Target(Pack, DependsOn(Build), () =>
             {
                 Pack("PuzzleBox.NeuralNets");
-                Pack("PuzzleBox.NeuralNets.Test");
             });
 
             Target(Publish, DependsOn(Pack), () =>
             {
-                Publish(GetNugetApiKey(), server: "https://api.nuget.org/v3/index.json");
+                Publish(GetNugetApiKey(), "https://api.nuget.org/v3/index.json");
             });
 
             Target("default", DependsOn(Pack));
