@@ -25,7 +25,7 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'Pack'
   inputs:
-    command: 'pack'
+    command: pack
     configuration: 'release'
     packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
     nobuild: true
@@ -39,8 +39,9 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'Push'
   inputs:
+    command: push
+    nuGetFeedType: external
     publishFeedCredentials: 'PuzzleBox.NeuralNets'
-    command: 'push'
-    configuration: 'release'
     packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
+    configuration: 'release'
     nobuild: true
