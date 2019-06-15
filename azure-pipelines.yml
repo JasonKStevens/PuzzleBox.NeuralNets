@@ -28,12 +28,10 @@ steps:
     command: pack
     configuration: 'release'
     packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
-    nobuild: true
     versioningScheme: byPrereleaseNumber
     majorVersion: '$(Major)'
     minorVersion: '$(Minor)'
     patchVersion: '$(Patch)'
-    arguments: '--version-suffix alpha'
 
 # Push
 - task: NuGetCommand@2
