@@ -16,7 +16,7 @@ variables:
 steps:
 
 # Build
-- script: dotnet build --configuration $(buildConfiguration)
+- script: dotnet build -c $(buildConfiguration)
   displayName: 'Build'
 
 # Test - TODO
