@@ -4,14 +4,14 @@ __This library is still in alpha__
 
 **PuzzleBox.NeuralNets** is a [.NET library](https://www.nuget.org/packages/PuzzleBox.NeuralNets/0.1.0) for building and training neural networks.
 
-The focus is ease of use:
+The intention for it is to be easy to use:
 
 ```c#
 // Build
-var net = new Net(2)
-    .Dense(2)
+var net = new Net(2)  // Input size 2
+    .Dense(2)         // Layer output size 2
     .Sigmoid()
-    .Dense(1)
+    .Dense(1)         // Layer output size 1
     .Sigmoid();
 
 // Train
