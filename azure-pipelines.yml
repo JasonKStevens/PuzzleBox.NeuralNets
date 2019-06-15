@@ -39,6 +39,7 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'Push'
   inputs:
+    publishFeedCredentials: 'PuzzleBox.NeuralNets'
     command: 'push'
     configuration: 'release'
     packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
