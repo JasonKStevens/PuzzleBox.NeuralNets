@@ -2,23 +2,7 @@
 
 __This library is still in alpha__
 
-**PuzzleBox.NeuralNets** is a [.NET library](https://www.nuget.org/packages/PuzzleBox.NeuralNets) for building and training neural networks.
-
-Current features
-
-* Fluent interface
-* Uses MathNet.Numerics which supports hardware acceleration.
-* Layers
-  * Dense
-  * Convolution
-  * Transpose Convolution
-* Activation functions
-  * Sigmoid
-  * TanH
-  * Relu
-* Cost functions:
-  * Squared error
-  * Cross entropy
+**PuzzleBox.NeuralNets** is a [.NET library](https://www.nuget.org/packages/PuzzleBox.NeuralNets/0.1.0) for building and training neural networks.
 
 The focus of this library is ease of use:
 
@@ -37,3 +21,19 @@ var cost = await trainer.TrainAsync(10000, trainingData);
 // Run
 var output = net.FeedForwards(input);
 ```
+
+**Current features**
+
+* Fluent interface
+* Uses MathNet.Numerics which supports hardware acceleration.
+* Layers
+  * Dense
+  * Convolution
+  * Transpose Convolution
+* Activation functions
+  * Sigmoid
+  * TanH
+  * Relu
+* Cost functions:
+  * Squared error
+  * Cross entropy
