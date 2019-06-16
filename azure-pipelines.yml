@@ -2,7 +2,15 @@
 # Build > Test > Pack > Push
 
 trigger:
-- master
+  branches:
+    include:
+    - master
+  tags:
+    include:
+    - v*
+  paths:
+    exclude:
+    - README.md
 
 pool:
   vmImage: 'windows-2019'
