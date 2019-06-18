@@ -1,4 +1,4 @@
-# CI for PuzzleBox.Timeline
+# CI for PuzzleBox.NeuralNets
 # Build > Test > Pack > Push
 
 trigger:
@@ -26,24 +26,3 @@ steps:
   displayName: 'Build'
 
 # Test - TODO
-
-# Pack
-- task: DotNetCoreCLI@2
-  displayName: 'Pack'
-  inputs:
-    command: pack
-    configuration: 'release'
-    packagesToPack: PuzzleBox.Timelines/PuzzleBox.Timelines.csproj
-    versioningScheme: byPrereleaseNumber
-    majorVersion: '$(Major)'
-    minorVersion: '$(Minor)'
-    patchVersion: '$(Patch)'
-
-# Push
-- task: NuGetCommand@2
-  displayName: 'Push'
-  inputs:
-    command: push
-    nuGetFeedType: external
-    publishFeedCredentials: 'PuzzleBox.Timelines'
-    packagesToPack: PuzzleBox.Timelines/PuzzleBox.Timelines.csproj
