@@ -1,4 +1,4 @@
-# CI for PuzzleBox.NeuralNets
+# CI for PuzzleBox.Timeline
 # Build > Test > Pack > Push
 
 trigger:
@@ -33,7 +33,7 @@ steps:
   inputs:
     command: pack
     configuration: 'release'
-    packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
+    packagesToPack: PuzzleBox.Timelines/PuzzleBox.Timelines.csproj
     versioningScheme: byPrereleaseNumber
     majorVersion: '$(Major)'
     minorVersion: '$(Minor)'
@@ -45,5 +45,5 @@ steps:
   inputs:
     command: push
     nuGetFeedType: external
-    publishFeedCredentials: 'PuzzleBox.NeuralNets'
-    packagesToPack: PuzzleBox.NeuralNets/PuzzleBox.NeuralNets.csproj
+    publishFeedCredentials: 'PuzzleBox.Timelines'
+    packagesToPack: PuzzleBox.Timelines/PuzzleBox.Timelines.csproj
