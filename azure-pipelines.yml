@@ -1,5 +1,5 @@
 # CI for PuzzleBox.NeuralNets
-# Build > Test > Pack > Push
+# Build & Test
 
 trigger:
   branches:
