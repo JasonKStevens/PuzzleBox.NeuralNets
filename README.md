@@ -1,6 +1,6 @@
 # PuzzleBox.NeuralNets
 
-[![Build Status](https://dev.azure.com/jasonkstevens/PuzzleBox.NeuralNets/_apis/build/status/JasonKStevens.PuzzleBox.NeuralNets?branchName=master)](https://dev.azure.com/jasonkstevens/PuzzleBox.NeuralNets/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://dev.azure.com/jasonkstevens/PuzzleBox/_apis/build/status/PuzzleBox.NeuralNets?branchName=master)](https://dev.azure.com/jasonkstevens/PuzzleBox/_build/latest?definitionId=1&branchName=master)
 
 _This library is in alpha._
 
