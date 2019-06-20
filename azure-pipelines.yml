@@ -25,7 +25,9 @@ steps:
 - script: dotnet build -c $(buildConfiguration)
   displayName: 'Build'
 
-# Test - TODO
+# Test
+- script: dotnet test -c $(buildConfiguration) --no-build
+  displayName: 'Test'
 
 # Pack
 - task: DotNetCoreCLI@2
