@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuzzleBox.NeuralNets", "Puz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuzzleBox.NeuralNets.Test", "PuzzleBox.NeuralNets.Test\PuzzleBox.NeuralNets.Test.csproj", "{BADBA63B-9920-44F1-A4A8-DAA324DC6227}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Build", "Build\Build.csproj", "{7AA240E0-73EF-4E08-BAF2-F334290AB1BB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{BADBA63B-9920-44F1-A4A8-DAA324DC6227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BADBA63B-9920-44F1-A4A8-DAA324DC6227}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BADBA63B-9920-44F1-A4A8-DAA324DC6227}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7AA240E0-73EF-4E08-BAF2-F334290AB1BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7AA240E0-73EF-4E08-BAF2-F334290AB1BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7AA240E0-73EF-4E08-BAF2-F334290AB1BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7AA240E0-73EF-4E08-BAF2-F334290AB1BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

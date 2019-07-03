@@ -150,17 +150,21 @@ namespace PuzzleBox.NeuralNets.Test.Layers
         public void should_feed_forward_reducing_kernels()
         {
             // Arrange
-            _sut = new ConvolutionalLayer(new Size(new[] { 2, 2 }, 1), new Size(1, 1), 2, 2);
+            _sut = new ConvolutionalLayer(
+                inputSize: new Size(new[] { 2, 2 }),
+                outputSize: new Size(1),
+                weightRows: 2,
+                weightColumns: 2);
 
             var input = new Tensor(
-                new Size(new[] { 2, 2 }, 1),
+                new Size(new[] { 2, 2 }),
                 new float[] {
                     1, 3, 2, 4,
                 });
 
             _sut.SetWeights(new float[,] {
-                { 5, 6, 5, 6 },
-                { 7, 8, 7, 8 },
+                { 5, 6 },
+                { 7, 8 },
             }.ToMatrix());
 
             var expectedOutput = new float[,] {
