@@ -118,15 +118,15 @@ namespace PuzzleBox.NeuralNets.Test
         }
 
         [Test]
-        public async Task should_learn_simple_2d_features()
+        public async Task should_learn_2d_features()
         {
             // Arrange
             var net = new Net(5, 5)
-                .Convolution(new Size(new[] { 2, 2 }, 2), 2, 2)
+                .Convolution(new[] { 3, 3 }, 2)
                 .Sigmoid()
                 .Dense(1)
                 .Sigmoid();
-            var sut = new Trainer(net, 0.15f).UseCrossEntropyCost();
+            var sut = new Trainer(net, 0.3f).UseCrossEntropyCost();
 
             // Act
             var finalCost = await sut.TrainAsync(20000, TrainingData.Lines2dPadded);
@@ -246,51 +246,6 @@ namespace PuzzleBox.NeuralNets.Test
             {
                 var output = net.FeedForwards(data.input);
                 Console.WriteLine("ACTUAL:" + output.Value.Map(x => Math.Round(x, 0)));
-                Console.WriteLine("DESIRED: " + data.output.Value);
-            }
-
-            foreach (var data in trainingData)
-            {
-                var output = net.FeedForwards(data.input);
-                Assert.That(output.Value.AlmostEqual(data.output.Value, 0.2f), Is.True);
-            }
-        }
-
-        [Test]
-        public async Task should_learn_transposed_convolution3()
-        {
-            // Arrange
-            var net = new Net(1, 1)
-                .ConvolutionTranspose(new Size(new[] { 2, 2 }, 2))
-                .Sigmoid()
-                .Convolution(new Size(new [] { 1, 1 }), 2, 2)
-                .Sigmoid();
-            var sut = new Trainer(net, 0.01f).UseCrossEntropyCost();
-
-            var trainingData = new (Tensor input, Tensor output)[]
-            {
-                (
-                    new float[,] { { -1 } },
-                    new float[,] { { 1 } }
-                ),
-                (
-                    new float[,] { { 1 } },
-                    new float[,] { { 0 } }
-                ),
-            };
-
-
-            // Act
-            var finalCost = await sut.TrainAsync(2000, trainingData);
-
-            // Assert
-            //Assert.That(finalCost, Is.LessThan(AcceptableErrorThreshold));
-            Console.Out.WriteLine($"Cost: {finalCost}");
-
-            foreach (var data in trainingData)
-            {
-                var output = net.FeedForwards(data.input);
-                Console.WriteLine("ACTUAL:" + output.Value.Map(x => Math.Round(x, 2)));
                 Console.WriteLine("DESIRED: " + data.output.Value);
             }
 

@@ -8,7 +8,7 @@ namespace PuzzleBox.NeuralNets.Test.Algebra
     public class MathNetExtensionsFixture
     {
         [Test]
-        public void should_perform_simple_convolve()
+        public void should_perform_convolve()
         {
             // Arrange
             var f = new float[,] {
@@ -35,7 +35,7 @@ namespace PuzzleBox.NeuralNets.Test.Algebra
         }
 
         [Test]
-        public void should_perform_simple_transpose_convolution()
+        public void should_perform_transpose_convolution()
         {
             // Arrange
             var f = new float[,] {
@@ -135,7 +135,7 @@ namespace PuzzleBox.NeuralNets.Test.Algebra
         }
 
         [Test]
-        public void should_perform_simple_1d_convolution()
+        public void should_perform_1d_convolution()
         {
             // Arrange
             var f = new float[,] {
@@ -181,7 +181,7 @@ namespace PuzzleBox.NeuralNets.Test.Algebra
         }
 
         [Test]
-        public void should_perform_simple_2d_transpose_convolution()
+        public void should_perform_2d_transpose_convolution()
         {
             // Arrange
             var f = new float[,] {

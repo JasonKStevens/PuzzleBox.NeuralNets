@@ -11,29 +11,31 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
     /// </summary>
     public class ConvolutionalLayer : WeightsLayerBase
     {
-        private readonly int _rowStride;
-        private readonly int _columnStride;
-        private readonly int _rowPadding;
-        private readonly int _columnPadding;
         private readonly bool _isTranspose;
+        private readonly int[] _strideArray;
+        private readonly int[] _paddingArray;
 
         public ConvolutionalLayer(
             Size inputSize,
             Size outputSize,
-            int weightRows,
-            int weightColumns,
-            int rowStride = 1,
-            int columnStride = 1,
-            int rowPadding = 0,
-            int columnPadding = 0)
+            int[] weightLength,
+            int[] strideArray,
+            int[] paddingArray)
             : base(inputSize, outputSize)
         {
-            _rowStride = rowStride;
-            _columnStride = columnStride;
-            _rowPadding = rowPadding;
-            _columnPadding = columnPadding;
+            GuardDimensions(outputSize, inputSize);
 
             _isTranspose = outputSize.Length > inputSize.Length;
+
+            _strideArray = strideArray;
+            _paddingArray = paddingArray;
+
+            // TODO: Fix current limitation of just 1-2 convolution dimensions due to base-class _weights.
+            // var weightLengths = new[] { kernelCount }.Concat(weightLength).ToArray();
+            // _weights = Array.CreateInstance(typeof(float), weightLengths);
+
+            var weightColumns = weightLength[0];
+            var weightRows = weightLength.Length == 1 ? 1 : weightLength[1];
 
             _weights = Matrix<float>.Build.Dense(weightRows, weightColumns * outputSize.KernelCount);
             _weights.InitRandom();
@@ -54,22 +56,6 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
             return new Tensor(OutputSize.Clone(), rows);
         }
 
-        private Matrix<float> CartesianConvolve(Matrix<float>[] fs, Matrix<float>[] gs)
-        {
-            //return (
-            //    from f in fs
-            //    from g in gs
-            //    select f.Convolve(g, _rowStride, _columnStride, _rowPadding, _columnPadding)
-            //).Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Append(c));
-            return fs
-                .Select(f => gs
-                    .Select(g => f.Convolve(g, _rowStride, _columnStride, _rowPadding, _columnPadding))
-                    .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Add(c))
-                    .Divide(gs.Length)
-                )
-                .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Append(c));
-        }
-
         public override void BackPropagate(TrainingRun trainingRun)
         {
             var outputError = trainingRun.OutputError
@@ -77,15 +63,39 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
                 .Select(m => _isTranspose ? m.Rotate180() : m)
                 .ToArray();
 
-            trainingRun.WeightsDelta = CartesianConvolve(
+            var weightsDelta = CartesianConvolve(
                 outputError,
                 trainingRun.Input.ToMatrices()
             );
 
             trainingRun.InputError = MatrixwiseConvolveTrans(
                 _weights.SplitByColumn(OutputSize.KernelCount),
-                trainingRun.WeightsDelta.SplitByColumn(OutputSize.KernelCount)
+                weightsDelta.SplitByColumn(OutputSize.KernelCount)
             );
+
+            // Ensure weightsDelta is the same size as _weights
+            // Currently done only for enlarging, TODO: Anything more needed here?
+            trainingRun.WeightsDelta = Matrix<float>.Build.Dense(this._weights.RowCount, this._weights.ColumnCount);
+
+            for (var r = 0; r < this._weights.RowCount / weightsDelta.RowCount; r++)
+            for (var c = 0; c < this._weights.ColumnCount / weightsDelta.ColumnCount; c++)
+            {
+                trainingRun.WeightsDelta.SetSubMatrix(r, c, weightsDelta);
+            }
+        }
+
+        private Matrix<float> CartesianConvolve(Matrix<float>[] fs, Matrix<float>[] gs)
+        {
+            var strideRows = _strideArray.Length > 1 ? _strideArray[1] : 1;
+            var paddingRows = _paddingArray.Length > 1 ? _paddingArray[1] : 1;
+
+            return fs
+                .Select(f => gs
+                    .Select(g => f.Convolve(g, strideRows, _strideArray[0], paddingRows, _paddingArray[0]))
+                    .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Add(c))
+                    .Divide(gs.Length)
+                )
+                .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Append(c));
         }
 
         private Matrix<float> MatrixwiseConvolveTrans(Matrix<float>[] fs, Matrix<float>[] hs)
@@ -97,9 +107,39 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
             var rowPadding = _isTranspose ? 0 : (int?)null;
             var columnPadding = _isTranspose ? 0 : (int?)null;
 
-            return Enumerable.Range(0, OutputSize.KernelCount)
-                .Select(i => fs[i].ConvolveTranspose(hs[i], rowPadding, columnPadding))
-                .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Add(c));
+            return Enumerable.Range(0, InputSize.KernelCount)
+                .Select(_ => Enumerable.Range(0, OutputSize.KernelCount)
+                    .Select(i => fs[i].ConvolveTranspose(hs[i], rowPadding, columnPadding))
+                    .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Add(c))
+                    .Divide(OutputSize.KernelCount)
+                )
+                .Aggregate((Matrix<float>)null, (m, c) => m == null ? c : m.Append(c));
+        }
+
+        private static void GuardDimensions(Size outputSize, Size inputSize)
+        {
+            if (inputSize.Dimensions.Length != outputSize.Dimensions.Length)
+                throw new ArgumentException("The number of input and output dimensions must match.");
+
+            var isTranspose = outputSize.Length > inputSize.Length;
+
+            for (int i = 0; i < inputSize.Dimensions.Length; i++)
+            {
+                var inputDimension = inputSize.Dimensions[i];
+                var outputDimension = outputSize.Dimensions[i];
+
+                if (inputDimension < 1)
+                    throw new ArgumentException($"Input dimension {i} cannot be less that 1.");
+
+                if (outputDimension < 1)
+                    throw new ArgumentException($"Output dimension {i} cannot be less that 1.");
+
+                if (isTranspose && outputDimension < inputDimension)
+                    throw new ArgumentException($"Output dimension {i} cannot be less that input dimension for transpose convolutions.");
+
+                if (!isTranspose && inputDimension < outputDimension)
+                    throw new ArgumentException($"Input dimension {i} cannot be less that output dimension for transpose convolutions.");
+            }
         }
     }
 
@@ -107,31 +147,42 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
     {
         public static Net Convolution(
             this Net net,
-            Size outputSize,
-            int weightRows,
-            int weightColumns
-            )
+            int[] weightLengths,
+            int kernelCount = 1,
+            int[] strideArray = null)
         {
             var inputSize = net.OutputSize;
-            GuardDimensions(outputSize, inputSize);
+            var dimensionCount = inputSize.Dimensions.Length;
 
-            var columnPadding = (weightColumns - 1) / 2;
-            var rowPadding = (weightRows - 1) / 2;
+            strideArray = strideArray ?? Enumerable.Range(0, dimensionCount)
+                .Select(_ => 1)
+                .ToArray();
 
-            var is2d = inputSize.Dimensions.Length > 1;
+            if (strideArray.Length != dimensionCount)
+                throw new ArgumentOutOfRangeException($"Stride array dimensions ({strideArray.Length}) must be the same as the input ({dimensionCount}).");
 
-            int columnStride = inputSize.Dimensions[0] / outputSize.Dimensions[0];
-            int rowStride = is2d ? inputSize.Dimensions[1] / outputSize.Dimensions[1] : 1;
+            var paddingArray = weightLengths
+                .Select(l => (l - 1) / 2)
+                .ToArray();
+
+            // TODO: Work out formula for convolution & transpose convolution
+            int GetOutputSize(int inSize, int weightLength, int padding, int stride)
+            {
+                return ((inSize - weightLength) / stride) + padding * 2 + 1;
+            }
+
+            var outputDimensions = Enumerable.Range(0, dimensionCount)
+                .Select(i => GetOutputSize(inputSize.Dimensions[i], weightLengths[i], paddingArray[i], strideArray[i]))
+                .ToArray();
+
+            var outputSize = new Size(outputDimensions, kernelCount);
 
             net.Add(new ConvolutionalLayer(
                 inputSize,
                 outputSize,
-                weightRows,
-                weightColumns,
-                rowStride,
-                columnStride,
-                rowPadding,
-                columnPadding));
+                weightLengths,
+                strideArray,
+                paddingArray));
             return net;
         }
 
@@ -140,44 +191,27 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
             Size outputSize)
         {
             var inputSize = net.OutputSize;
-            GuardDimensions(outputSize, inputSize, isTranspose: true);
+            var dimensionCount = inputSize.Dimensions.Length;
 
-            var is2d = inputSize.Dimensions.Length > 1;
+            var paddingArray = Enumerable.Range(0, dimensionCount)
+                .Select(i => outputSize.Dimensions[i] - inputSize.Dimensions[i])
+                .ToArray();
 
-            var columnPadding = outputSize.Dimensions[0] - inputSize.Dimensions[0];
-            var rowPadding = is2d ? outputSize.Dimensions[1] - inputSize.Dimensions[1] : 1;
+            var strideArray = Enumerable.Range(0, dimensionCount)
+                .Select(_ => 1)
+                .ToArray();
 
-            var weightColumns = columnPadding + 1;
-            var weightRows = rowPadding + 1;
+            var weightLengths = paddingArray
+                .Select(p => p + 1)
+                .ToArray();
 
             net.Add(new ConvolutionalLayer(
-                inputSize,
-                outputSize,
-                weightRows,
-                weightColumns,
-                rowStride: 1,
-                columnStride: 1,
-                rowPadding: rowPadding,
-                columnPadding: columnPadding));
+               inputSize,
+               outputSize,
+               weightLengths,
+               strideArray,
+               paddingArray));
             return net;
-        }
-
-        private static void GuardDimensions(Size outputSize, Size intputSize, bool isTranspose = false)
-        {
-            if (intputSize.Dimensions.Length != outputSize.Dimensions.Length)
-                throw new ArgumentException("The number of input and output dimensions must match.");
-
-            for (int i = 0; i < intputSize.Dimensions.Length; i++)
-            {
-                var inputDimension = intputSize.Dimensions[i];
-                var outputDimension = outputSize.Dimensions[i];
-
-                if (isTranspose && outputDimension < inputDimension)
-                    throw new ArgumentException($"Output dimension {i} cannot be less that input dimension for transpose convolutions.");
-
-                if (!isTranspose && inputDimension < outputDimension)
-                    throw new ArgumentException($"Input dimension {i} cannot be less that output dimension for transpose convolutions.");
-            }
         }
     }
 }

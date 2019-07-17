@@ -74,7 +74,7 @@ namespace PuzzleBox.NeuralNets.Algebra
                 throw new ArgumentException($"Tensor's size must be 1d or 2d to convert to matrices.");
 
             var cols = Size.Dimensions[0];
-            var rows = Size.Dimensions[1];
+            var rows = Size.Dimensions.Length > 1 ? Size.Dimensions[1] : 1;
 
             var subVectorLength = cols * rows;
 

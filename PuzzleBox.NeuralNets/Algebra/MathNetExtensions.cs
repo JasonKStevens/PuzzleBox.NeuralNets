@@ -88,8 +88,13 @@ namespace PuzzleBox.NeuralNets.Algebra
             var rLength = rEnd - rStart;
             var cLength = cEnd - cStart;
 
-            var convRows = rLength < rowStride ? rLength : (int) Math.Truncate((float) rLength / rowStride);
-            var convCols = cLength < columnStride ? cLength : (int) Math.Truncate((float) cLength / columnStride);
+            int GetOutputSize(int inputSize, int stride)
+            {
+                return (int) Math.Truncate(((double) inputSize - 1) / stride) + 1;
+            }
+
+            var convRows = rLength < rowStride ? rLength : GetOutputSize(rLength, rowStride);
+            var convCols = cLength < columnStride ? cLength : GetOutputSize(cLength, columnStride);
             var conv = Matrix<float>.Build.Dense(convRows, convCols);
 
             for (int r = rStart; r < rEnd; r += rowStride)
