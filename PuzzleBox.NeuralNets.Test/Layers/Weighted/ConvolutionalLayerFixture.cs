@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using PuzzleBox.NeuralNets.Algebra;
 using PuzzleBox.NeuralNets.Layers.Weighted;
+using PuzzleBox.NeuralNets.Training;
 using System.Collections;
 
 namespace PuzzleBox.NeuralNets.Test.Layers
@@ -34,6 +35,38 @@ namespace PuzzleBox.NeuralNets.Test.Layers
             // Assert
             Assert.That(output.Size.Dimensions.Length, Is.EqualTo(1));
             Assert.That(output.Size.Dimensions[0], Is.EqualTo(expectedOutputSize));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(2, 1)]
+        [TestCase(2, 2)]
+        [TestCase(3, 1)]
+        [TestCase(3, 2)]
+        [TestCase(3, 3)]
+        [TestCase(4, 1)]
+        [TestCase(4, 2)]
+        [TestCase(4, 4)]
+        public void should_backpropagate_tensor_of_correct_size(int inputSize, int weightLength)
+        {
+            // Arrange
+            _sut = (ConvolutionalLayer)new Net(inputSize, inputSize)
+                .Convolution(new[] { weightLength, weightLength })
+                .Layers[0];
+
+            var output = _sut.FeedForwards(new float[inputSize, inputSize].ToMatrix());
+
+            var trainingRun = new TrainingRun(1)
+            {
+                Input = new float[inputSize, inputSize].ToMatrix(),
+                Output = output,
+                OutputError = new float[output.Size.Dimensions[1], output.Size.Dimensions[0]].ToMatrix()
+            };
+
+            // Act
+            _sut.BackPropagate(trainingRun);
+
+            // Assert
+            Assert.That(trainingRun.InputError.Size, Is.EqualTo(trainingRun.Input.Size));
         }
     }
 }

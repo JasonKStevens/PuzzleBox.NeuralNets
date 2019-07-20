@@ -98,16 +98,18 @@ namespace PuzzleBox.NeuralNets.Test
             // Arrange
             var net = new Net(5, 5)
                 .Convolution(new [] { 3, 3 }, 2)
-                .Relu()
-                .Dense(new Size(new [] { 2, 2 }))
-                .Relu()
-                .ConvolutionTranspose(new Size(new[] { 5, 5 }))
-                .Relu();
-            var sut = new Trainer(net, 0.2f);
-            var authoEncodingData = TrainingData.Lines2dPadded.Select(i => (i.input, output: i.input));
+                .Sigmoid()
+                .Dense(new Size(new [] { 1, 1 }, 2))
+                .TanH()
+                .ConvolutionTranspose(new[] { 5, 5 })
+                .Sigmoid();
+            var sut = new Trainer(net, 0.15f);
+            var authoEncodingData = TrainingData.Lines2dPadded
+                .Where((_, i) => i == 1 || i == 4)
+                .Select(i => (i.input, output: i.input));
 
             // Act
-            var finalCost = await sut.TrainAsync(20000, authoEncodingData);
+            var finalCost = await sut.TrainAsync(50000, authoEncodingData);
 
             // Assert
             //Assert.That(finalCost, Is.LessThan(AcceptableErrorThreshold));

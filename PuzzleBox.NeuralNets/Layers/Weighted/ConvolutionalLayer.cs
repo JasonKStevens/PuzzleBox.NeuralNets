@@ -70,7 +70,7 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
 
             trainingRun.InputError = MatrixwiseConvolveTrans(
                 _weights.SplitByColumn(OutputSize.KernelCount),
-                weightsDelta.SplitByColumn(OutputSize.KernelCount)
+                outputError
             );
 
             // Ensure weightsDelta is the same size as _weights
@@ -104,8 +104,8 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
                 throw new ArgumentException("Feature count doesn't match.");
 
             // TODO: Find formula for padding in transpose convolution
-            var rowPadding = _isTranspose ? 0 : (int?)null;
-            var columnPadding = _isTranspose ? 0 : (int?)null;
+            var rowPadding = (InputSize.Dimensions[1] - OutputSize.Dimensions[1] + _weights.RowCount - 1) / 2;
+            var columnPadding = (InputSize.Dimensions[0] - OutputSize.Dimensions[0] + _weights.ColumnCount - 1) / 2;
 
             return Enumerable.Range(0, InputSize.KernelCount)
                 .Select(_ => Enumerable.Range(0, OutputSize.KernelCount)
@@ -165,7 +165,6 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
                 .Select(l => (l - 1) / 2)
                 .ToArray();
 
-            // TODO: Work out formula for convolution & transpose convolution
             int GetOutputSize(int inSize, int weightLength, int padding, int stride)
             {
                 return ((inSize - weightLength) / stride) + padding * 2 + 1;
@@ -188,29 +187,37 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
 
         public static Net ConvolutionTranspose(
             this Net net,
-            Size outputSize)
+            int[] weightLengths,
+            int kernelCount = 1)
         {
             var inputSize = net.OutputSize;
             var dimensionCount = inputSize.Dimensions.Length;
-
-            var paddingArray = Enumerable.Range(0, dimensionCount)
-                .Select(i => outputSize.Dimensions[i] - inputSize.Dimensions[i])
-                .ToArray();
 
             var strideArray = Enumerable.Range(0, dimensionCount)
                 .Select(_ => 1)
                 .ToArray();
 
-            var weightLengths = paddingArray
-                .Select(p => p + 1)
+            var paddingArray = weightLengths
+                .Select(l => l - 1)
                 .ToArray();
 
+            int GetOutputSize(int inSize, int weightLength, int padding, int stride)
+            {
+                return ((inSize - weightLength) / stride) + padding * 2 + 1;
+            }
+
+            var outputDimensions = Enumerable.Range(0, dimensionCount)
+                .Select(i => GetOutputSize(inputSize.Dimensions[i], weightLengths[i], paddingArray[i], strideArray[i]))
+                .ToArray();
+
+            var outputSize = new Size(outputDimensions, kernelCount);
+
             net.Add(new ConvolutionalLayer(
-               inputSize,
-               outputSize,
-               weightLengths,
-               strideArray,
-               paddingArray));
+                inputSize,
+                outputSize,
+                weightLengths,
+                strideArray,
+                paddingArray));
             return net;
         }
     }

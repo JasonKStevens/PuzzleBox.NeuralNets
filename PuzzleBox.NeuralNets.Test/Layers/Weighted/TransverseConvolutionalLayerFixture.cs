@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections;
+using NUnit.Framework;
 using PuzzleBox.NeuralNets.Algebra;
 using PuzzleBox.NeuralNets.Layers.Weighted;
-using System;
-using System.Collections;
+using PuzzleBox.NeuralNets.Training;
 
 namespace PuzzleBox.NeuralNets.Test.Layers
 {
@@ -10,12 +11,12 @@ namespace PuzzleBox.NeuralNets.Test.Layers
     {
         private ConvolutionalLayer _sut;
 
-        [Test, TestCaseSource("TestCases")]
-        public void should_output_tensor_of_correct_size(int inputSize, int outputSize)
+        [TestCaseSource("TestCases")]
+        public void should_output_tensor_of_correct_size(int inputSize, int weightLength, int expectedOutputSize)
         {
             // Arrange
             _sut = (ConvolutionalLayer)new Net(inputSize, inputSize)
-                .ConvolutionTranspose(new Size(new[] { outputSize, outputSize }))
+                .ConvolutionTranspose(new[] { weightLength, weightLength })
                 .Layers[0];
 
             var input = new float[inputSize, inputSize].ToMatrix();
@@ -25,42 +26,38 @@ namespace PuzzleBox.NeuralNets.Test.Layers
 
             // Assert
             Assert.That(output.Size.Dimensions.Length, Is.EqualTo(2));
-            Assert.That(output.Size.Dimensions[0], Is.EqualTo(outputSize));
-            Assert.That(output.Size.Dimensions[1], Is.EqualTo(outputSize));
+            Assert.That(output.Size.Dimensions[0], Is.EqualTo(expectedOutputSize));
+            Assert.That(output.Size.Dimensions[1], Is.EqualTo(expectedOutputSize));
         }
 
-        [TestCase(2, 1)]
-        [TestCase(3, 2)]
-        public void should_throw_for_input_sizes_greater_than_output(int inputSize, int outputSize)
+        [TestCaseSource("TestCases")]
+        public void should_backpropagate_tensor_of_correct_size(int inputSize, int weightLength, int outputSize)
         {
-            Assert.Throws<ArgumentException>(() =>
-                _sut = (ConvolutionalLayer)new Net(inputSize, inputSize)
-                    .ConvolutionTranspose(new Size(new[] { outputSize, outputSize }))
-                    .Layers[0]);
-        }
+            // Arrange
+            _sut = (ConvolutionalLayer) new Net(inputSize, inputSize)
+                .ConvolutionTranspose(new[] { weightLength, weightLength })
+                .Layers[0];
 
-        [TestCase(1, 0)]
-        [TestCase(0, 1)]
-        [TestCase(-1, 1)]
-        [TestCase(1, -1)]
-        public void should_throw_for_sizes_less_than_one(int inputSize, int outputSize)
-        {
-            Assert.Throws<ArgumentException>(() =>
-                _sut = (ConvolutionalLayer)new Net(inputSize, inputSize)
-                    .ConvolutionTranspose(new Size(new[] { outputSize, outputSize }))
-                    .Layers[0]);
+            var trainingRun = new TrainingRun(1)
+            {
+                Input = new float[inputSize, inputSize].ToMatrix(),
+                Output = _sut.FeedForwards(new float[inputSize, inputSize].ToMatrix()),
+                OutputError = new float[outputSize, outputSize].ToMatrix()
+            };
+
+            // Act
+            _sut.BackPropagate(trainingRun);
+
+            // Assert
+            Assert.That(trainingRun.InputError.Size, Is.EqualTo(trainingRun.Input.Size));
         }
 
         public static IEnumerable TestCases
         {
             get
             {
-                const int cases = 7;
-                for (int i = 1; i < cases; i++)
-                for (int o = i; o < cases; o++)
-                {
-                    yield return new TestCaseData(i, o);
-                }
+                yield return new TestCaseData(1, 1, 1);
+                yield return new TestCaseData(1, 2, 2);
             }
         }
     }

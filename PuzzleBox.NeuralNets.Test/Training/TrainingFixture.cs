@@ -155,7 +155,7 @@ namespace PuzzleBox.NeuralNets.Test
         {
             // Arrange
             var net = new Net(1, 1)
-                .ConvolutionTranspose(new Size(new[] { 2, 2 }))
+                .ConvolutionTranspose(new[] { 2, 2 })
                 .Sigmoid();
             var sut = new Trainer(net, 0.01f).UseCrossEntropyCost();
 
@@ -206,7 +206,7 @@ namespace PuzzleBox.NeuralNets.Test
         {
             // Arrange
             var net = new Net(1, 1)
-                .ConvolutionTranspose(new Size(new[] { 4, 4 }))
+                .ConvolutionTranspose(new[] { 4, 4 })
                 .Sigmoid();
             var sut = new Trainer(net, 0.10f).UseCrossEntropyCost();
 

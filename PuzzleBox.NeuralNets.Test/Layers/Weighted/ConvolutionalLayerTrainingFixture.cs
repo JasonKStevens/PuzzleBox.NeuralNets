@@ -12,11 +12,11 @@ namespace PuzzleBox.NeuralNets.Test.Layers
         public void Setup()
         {
             _sut = new ConvolutionalLayer(
-                inputSize: new Size(3, 3),
-                outputSize: new Size(2, 2),
+                inputSize: new Size(3, 1),
+                outputSize: new Size(2, 1),
                 paddingArray: new [] { 0, 0 },
                 strideArray: new[] { 1, 1 },
-                weightLength: new[] { 2, 2 });
+                weightLength: new[] { 2, 1 });
         }
 
         [Test]
@@ -24,19 +24,15 @@ namespace PuzzleBox.NeuralNets.Test.Layers
         {
             // Arrange
             var input = new float[,] {
-                { 0.76f, -1.34f, 2.41f },
-                { -0.42f, 1.76f, 0.24f },
-                { -1.24f, 0.43f, 0.76f },
+                { 1, 2, 3 },
             }.ToMatrix();
 
             _sut.SetWeights(new float[,] {
-                { 0.63f, -0.23f },
-                { -0.14f, 0.41f },
+                { 0.2f, 0.7f },
             }.ToMatrix());
 
             var expectedOutput = new float[,] {
-                { 1.5674f, -1.5465f },
-                { -0.3195f, 1.305f }
+                { 1.6f, 2.5f },
             }.ToMatrix();
 
             // Act
@@ -51,14 +47,11 @@ namespace PuzzleBox.NeuralNets.Test.Layers
         {
             // Arrange
             var input = new float[,] {
-                { 0.76f, -1.34f, 2.41f },
-                { -0.42f, 1.76f, 0.24f },
-                { -1.24f, 0.43f, 0.76f },
+                { 1, 2, 3 },
             }.ToMatrix();
 
             _sut.SetWeights(new float[,] {
-                { 0.63f, -0.23f },
-                { -0.14f, 0.41f },
+                { 0.2f, 0.7f },
             }.ToMatrix());
 
             var trainingRun = new TrainingRun(1)
@@ -66,20 +59,16 @@ namespace PuzzleBox.NeuralNets.Test.Layers
                 Input = input,
                 Output = _sut.FeedForwards(new Tensor(input)),
                 OutputError = new float[,] {
-                    { 0.24f, 0.78f },
-                    { -0.31f, 0.45f }
+                    { 0.2f, -0.5f }
                 }
             };
 
             var expectedInputError = new float[,] {
-                { 0.037422f, 0.692316f, -0.257738f },
-                { 1.157121f, -0.042478f, 0.271237f },
-                { -0.258986f, 0.643897f, 0.335503f },
+                { 0.04f, 0.04f, -0.35f },
             }.ToMatrix();
 
             var expectedWeightsDelta = new float[,] {
-                { 0.0594f, 1.1206f },
-                { 1.8499f, 0.8183f },
+                { -0.8f, -1.1f },
             }.ToMatrix();
 
             // Act
