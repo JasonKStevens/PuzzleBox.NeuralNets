@@ -10,8 +10,6 @@ namespace PuzzleBox.NeuralNets.Test.Layers
     {
         private ConvolutionalLayer _sut;
 
-        // TODO: Test for kernelCount
-
         [TestCase(1, 1, 1)]
         [TestCase(2, 1, 2)]
         [TestCase(2, 2, 1)]

@@ -9,8 +9,8 @@ namespace PuzzleBox.NeuralNets.Layers.Weighted
     {
         public DenseLayer(Size inputSize, Size outputSize) : base(inputSize, outputSize)
         {
-            _weights = Matrix<float>.Build.Dense(outputSize.TotalLength, inputSize.TotalLength)
-                .InsertColumn(0, Vector<float>.Build.Dense(outputSize.TotalLength, 1));  // Bias;
+            _weights = Matrix<float>.Build.Dense(outputSize.Length, inputSize.Length)
+                .InsertColumn(0, Vector<float>.Build.Dense(outputSize.Length, 1));  // Bias;
             _weights.InitRandom();
         }
 

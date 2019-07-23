@@ -11,7 +11,7 @@ namespace PuzzleBox.NeuralNets.Algebra
 
         public Tensor(Size size, Vector<float> value)
         {
-            if (size.TotalLength != value.Count)
+            if (size.Length != value.Count)
                 throw new ArgumentOutOfRangeException("Total tensor length must match vector length.");
 
             Size = size;
@@ -25,7 +25,7 @@ namespace PuzzleBox.NeuralNets.Algebra
         public Tensor(Matrix<float> matrix) :
             this(
                 new Size(matrix.ColumnCount, matrix.RowCount),
-                Vector<float>.Build.DenseOfArray(matrix.ToColumnMajorArray())  // TODO: Check efficiency of this
+                Vector<float>.Build.DenseOfArray(matrix.ToColumnMajorArray())
             )
         {
         }
@@ -58,9 +58,9 @@ namespace PuzzleBox.NeuralNets.Algebra
 
             var columns = dims[0];
             var rows = dims.Length > 1 ? dims[1] : 1;
-            var matrix = Matrix<float>.Build.Dense(rows, columns * Size.KernelCount);
+            var matrix = Matrix<float>.Build.Dense(rows, columns);
 
-            for (int c = 0; c < columns * Size.KernelCount; c++)
+            for (int c = 0; c < columns; c++)
             {
                 matrix.SetColumn(c, Value.SubVector(c * rows, rows));
             }
@@ -70,8 +70,10 @@ namespace PuzzleBox.NeuralNets.Algebra
 
         public Matrix<float>[] ToMatrices()
         {
-            if (Size.Dimensions.Length != 1 && Size.Dimensions.Length != 2)
-                throw new ArgumentException($"Tensor's size must be 1d or 2d to convert to matrices.");
+            var kernelCount = Size.Dimensions.Length == 3 ? Size.Dimensions[2] : 1;
+
+            if (!new [] { 1, 2, 3 }.Contains(Size.Dimensions.Length))
+                throw new ArgumentException($"Tensor's size must be 1d, 2d or 3d (with kernels) to convert to matrices.");
 
             var cols = Size.Dimensions[0];
             var rows = Size.Dimensions.Length > 1 ? Size.Dimensions[1] : 1;
@@ -80,8 +82,8 @@ namespace PuzzleBox.NeuralNets.Algebra
 
             if (Value.Count % subVectorLength != 0)
                 throw new ArgumentException($"Vector does not evenly split into desired matrix size.");
-            
-            var matrices = Enumerable.Range(0, Size.KernelCount)
+
+            var matrices = Enumerable.Range(0, kernelCount)
                 .Select(f => Value.SubVector(f * subVectorLength, subVectorLength))
                 .Select(ev => Matrix<float>.Build.DenseOfColumnMajor(rows, cols, ev))
                 .ToArray();
@@ -101,6 +103,34 @@ namespace PuzzleBox.NeuralNets.Algebra
             return
                 this.Size.Equals(other.Size) &&
                 this.Value.Equals(other.Value);
+        }
+
+        /// <summary>
+        /// Splits tensor into multiple by peeling off last dimension.
+        /// This is used to get multiple kernels from a single tensor for example.
+        /// </summary>
+        /// <returns>Tensor array reduce by one dimension.</returns>
+        public Tensor[] SplitTensorsByLastDimension()
+        {
+            if (Size.Dimensions.Length == 1)
+                throw new InvalidOperationException("Cannot split tensor by last dimension with just one dimension.");
+
+            var newDimensions = Size.Dimensions.Take(Size.Dimensions.Length - 1).ToArray();
+            var newSize = new Size(newDimensions);
+            var lastDimension = Size.Dimensions.Last();
+
+            var tensors = Enumerable.Range(0, lastDimension)
+                .Select(i => Value.SubVector(i * newSize.Length, newSize.Length))
+                .Select(v => new Tensor(newSize, v))
+                .ToArray();
+            return tensors;
+        }
+
+        public Matrix<float>[] SplitIntoMatricesByLastDimension()
+        {
+            return SplitTensorsByLastDimension()
+                .Select(t => t.ToMatrix())
+                .ToArray();
         }
 
         public static implicit operator Matrix<float>(Tensor tensor)

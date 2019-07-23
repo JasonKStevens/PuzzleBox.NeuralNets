@@ -13,8 +13,8 @@ namespace PuzzleBox.NeuralNets.Test.Layers
         {
             _sut = new ConvolutionalLayer(
                 inputSize: new Size(1, 1),
-                outputSize: new Size(2, 2),
-                weightLength: new [] { 2, 2 },
+                weightLengths: new [] { 2, 2 },
+                kernelCount: 1,
                 strideArray: new[] { 1, 1 },
                 paddingArray: new[] { 1, 1 });
         }
@@ -50,8 +50,8 @@ namespace PuzzleBox.NeuralNets.Test.Layers
             // Arrange
             _sut = new ConvolutionalLayer(
                 inputSize: new Size(4, 4),
-                outputSize: new Size(6, 6),
-                weightLength: new[] { 3, 3 },
+                weightLengths: new[] { 3, 3 },
+                kernelCount: 1,
                 strideArray: new[] { 1, 1 },
                 paddingArray: new[] { 2, 2 });
 

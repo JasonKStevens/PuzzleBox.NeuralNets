@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using PuzzleBox.NeuralNets.Algebra;
+using System;
+using System.Linq;
 
 namespace PuzzleBox.NeuralNets.Test.Algebra
 {
@@ -63,6 +65,71 @@ namespace PuzzleBox.NeuralNets.Test.Algebra
 
             // Assert
             Assert.That(reproduction, Is.EqualTo(original));
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(6)]
+        public void should_support_multiple_dimensions(int dimensionCount)
+        {
+            // Arrange
+            var dimensionSize = 12 / dimensionCount;
+            var values = new float[(int)Math.Pow(dimensionSize, dimensionCount)];
+            var dimensionSizes = Enumerable.Range(0, dimensionCount)
+                .Select(c => dimensionSize)
+                .ToArray();
+
+            // Act
+            var tensor = new Tensor(new Size(dimensionSizes), values);
+
+            // Assert
+            Assert.That(tensor.Size.Dimensions.Length, Is.EqualTo(dimensionCount));
+            for (int i = 0; i < dimensionCount; i++)
+            {
+                Assert.That(tensor.Size.Dimensions[i], Is.EqualTo(12 / dimensionCount));
+            }
+        }
+
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(6)]
+        public void should_split_tensor_by_last_dimension(int dimensionCount)
+        {
+            // Arrange
+            var dimensionSize = 12 / dimensionCount;
+            var values = new float[(int)Math.Pow(dimensionSize, dimensionCount)];
+            var dimensionSizes = Enumerable.Range(0, dimensionCount)
+                .Select(c => dimensionSize)
+                .ToArray();
+            var tensor = new Tensor(new Size(dimensionSizes), values);
+
+            // Act
+            var tensors = tensor.SplitTensorsByLastDimension();
+
+            // Assert
+            Assert.That(tensors.Length, Is.EqualTo(dimensionSizes.Last()),
+                "The number of tensor arrays should be the same as the size of the last dimension.");
+
+            var reducedDimensions = dimensionSizes.Take(dimensionSizes.Length - 1).ToArray();
+            var expectedSize = new Size(reducedDimensions);
+
+            for (int i = 0; i < tensors.Length; i++)
+            {
+                Assert.That(tensors[i].Size, Is.EqualTo(expectedSize),
+                    $"Tensor {i} is not the expected size.");
+            }
+        }
+
+        public void should_throw_splitting_tensor_with_just_one_dimension()
+        {
+            // Arrange
+            var tensor = new Tensor(new Size(10), new float[10]);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => tensor.SplitTensorsByLastDimension());
         }
     }
 }
